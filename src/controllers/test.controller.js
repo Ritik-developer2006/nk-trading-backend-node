@@ -1,6 +1,6 @@
 const mysqlDB = require("../config/mysql");
-const sql = require("mssql");
-const { sqlConfig } = require("../config/sqlserver");
+// const sql = require("msnodesqlv8");
+const { sql, sqlConfig } = require("../config/sqlserver");
 
 exports.testMySQL = async (req, res) => {
   const [rows] = await mysqlDB.query("SELECT 1 AS mysql_test");
@@ -12,19 +12,15 @@ exports.testMongo = async (req, res) => {
 };
 
 exports.testSQLServer = async (req, res) => {
-  let pool;
   try {
-    pool = new sql.ConnectionPool(sqlConfig);
-    await pool.connect();
-    const request = pool.request();
-    const result = await request.query("SELECT 1 AS sqlserver_test");
+    const pool = await sql.connect(sqlConfig);
+    const result = await pool
+      .request()
+      .query("SELECT * FROM tbl_brands");
+
     res.json(result.recordset);
   } catch (err) {
     console.error("SQL Server Error:", err);
     res.status(500).json({ error: err.message });
-  } finally {
-    if (pool) {
-      await pool.close();
-    }
   }
 };
