@@ -3,6 +3,7 @@ const Auth = require("../models/auth.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// For create user
 exports.register = async (req, res) => {
     try {
         const { firstName, lastName, email, number, country, state, address1, address2, pincode, password } = req.body;
@@ -50,6 +51,7 @@ exports.register = async (req, res) => {
     }
 };
 
+// For login user
 exports.login = async (req, res) => {
     try {
         const { email, number, password } = req.body;
@@ -80,6 +82,29 @@ exports.login = async (req, res) => {
             status: true,
             message: 'User found!',
             token
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// For forgot password
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email_mobile } = req.body;
+
+        // Call model to create user
+        const result = await Auth.findByEmailOrNumber(email_mobile);
+        
+        if (!result.status) {
+            return res.status(400).json(result);
+        }
+
+        res.status(201).json({
+            status: true,
+            message: result.msg,
+            otp: result.otp,
         });
 
     } catch (err) {
